@@ -15,46 +15,45 @@ namespace Test101
 {
     public partial class Form1 : Form
     {
-        UpdateManager manager;
+
         public Form1()
         {
             InitializeComponent();
-
             CheckforUpdates();
+
         }
 
-
-        private async Task CheckforUpdates()
+        private void Form1_Load(object sender, EventArgs e)
         {
-            manager = await UpdateManager.GitHubUpdateManager(@"https://github.com/hy043/Test101");
-          
+            AddVersionNumver();
+
+        }
+
+        private void AddVersionNumver()
+        {
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
             FileVersionInfo VerisonInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
 
             this.Text += $" v.{VerisonInfo.FileVersion}";
-
         }
 
-        private async void toolStripStatusLabel1_Click(object sender, EventArgs e)
+        private async void CheckforUpdates()
         {
-            var updateinfo = await manager.CheckForUpdate();
-            if (updateinfo.ReleasesToApply.Count > 0)
+            try
             {
-                DialogResult dr = ShowDialog();
-                if (dr == DialogResult.Yes)
+                using (var mgr = await UpdateManager.GitHubUpdateManager("https://github.com/hy043/Test101"))
                 {
-                    await manager.UpdateApp();
-                    MessageBox.Show("updated");
-                }
-                else if (dr == DialogResult.No)
-                {
-                    return;
+                    var release = await mgr.UpdateApp();
                 }
             }
-            else
+            catch (Exception e)
             {
-                MessageBox.Show("you're up to date");
+
+              Debug.WriteLine("faild to check update:" + e.ToString());
             }
         }
+
+
     }
 }
+     
